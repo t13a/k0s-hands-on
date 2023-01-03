@@ -1,0 +1,2 @@
+instance-id: ${NODE_DOM}
+local-hostname: ${NODE_DOM}

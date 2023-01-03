@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+name="${1}"
+
+shift
+
+virsh list "${@}" --name | grep -q "^${name} *$"

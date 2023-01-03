@@ -1,0 +1,12 @@
+# completely disable host key checking
+Host *
+    LogLevel ERROR
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
+Host libvirt
+    User libvirt
+
+Host debian
+    ProxyJump libvirt
+    User debian

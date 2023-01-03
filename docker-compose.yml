@@ -1,0 +1,28 @@
+services:
+  dev:
+    build:
+      context: dev/container
+    environment:
+      DEV_GID:
+      DEV_HOME: /mnt/dev/home
+      DEV_UID:
+      LIBVIRT_DEFAULT_URI: qemu+ssh://libvirt/system
+      PATH: /mnt/cluster/scripts:/mnt/node/scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    hostname: dev
+    user: "${DEV_UID}:${DEV_GID}"
+    volumes:
+      - .:/mnt
+    working_dir: /mnt
+  libvirt:
+    build:
+      context: libvirt/container
+    hostname: libvirt
+    privileged: true
+    tmpfs:
+      - /run
+      - /tmp
+    tty: true
+    volumes:
+      - libvirt_images:/var/lib/libvirt/images
+volumes:
+  libvirt_images:

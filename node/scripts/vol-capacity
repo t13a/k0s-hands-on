@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+file="${1}"
+pool="${2}"
+
+shift
+shift
+
+if ! out="$(virsh vol-info "${file}" --pool "${pool}" --bytes)"
+then
+    echo -1
+    exit 1
+fi
+
+awk -F' ' '{ if ($1=="Capacity:") { print $2 } }' <<< "${out}"

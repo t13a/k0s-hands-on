@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -eu
+
+host=libvirt
+from="$(yq -r '.clusters[0].cluster.server | sub("^.*://"; "")' "${DEV_HOME}/.kube/config")"
+to="$(yq -r '.spec.hosts[0].ssh.address' "${DEV_HOME}/k0sctl.yaml"):6443"
+ssh-tunnel "${host}" "${from}" "${to}"
+
+/usr/bin/kubectl "${@}"

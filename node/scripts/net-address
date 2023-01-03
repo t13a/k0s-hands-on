@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ssh libvirt getent hosts "${1}" | grep -Eo '^\S+'

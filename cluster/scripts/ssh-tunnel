@@ -1,0 +1,48 @@
+#!/bin/sh
+
+set -eu
+
+function check() {
+    local out
+    if out="$(ssh -S "${control_path}" -O check "${host}" 2>&1)"
+    then
+        return 0
+    else
+        echo "${out}" >&2
+        return 1
+    fi
+}
+
+function start() {
+    nohup ssh \
+        -M \
+        -S "${control_path}" \
+        -o "ControlPersist=${control_persist}" \
+        -nNT \
+        -L "${from}:${to}" \
+        "${host}" > /dev/null 2>&1 &
+}
+
+host="${1}"
+from="${2}"
+to="${3}"
+
+control_path="${DEV_HOME}/.ssh-tunnel.$(echo -n "${host},${from},${to}" | md5sum | cut -d' ' -f1).socket"
+control_persist=60
+
+if [ -S "${control_path}" ] && check
+then
+    exit
+fi
+
+echo "Starting SSH tunnel..." >&2
+start
+sleep 1
+
+while ! check
+do
+    echo "Waiting for connect..." >&2
+    sleep 1
+done
+
+echo "Started SSH tunnel" >&2
