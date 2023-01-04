@@ -6,7 +6,7 @@ services:
       DEV_GID:
       DEV_HOME: /mnt/dev/home
       DEV_UID:
-      LIBVIRT_DEFAULT_URI: qemu+ssh://libvirt/system
+      LIBVIRT_DEFAULT_URI: qemu+tcp://libvirt/system
       PATH: /mnt/cluster/scripts:/mnt/node/scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     hostname: dev
     user: "${DEV_UID}:${DEV_GID}"
