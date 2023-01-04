@@ -15,12 +15,10 @@ RUN apk --no-cache add \
     k0sctl-bash-completion \
     kubectl \
     kubectl-bash-completion \
-    kubectl-krew \
     libvirt-bash-completion \
     libvirt-client \
     make \
     openssh-client-default \
-    sshpass \
     sudo \
     tini \
     virt-install \
