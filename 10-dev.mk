@@ -24,11 +24,11 @@ dev/exec: dev/exec/dev
 
 .PHONY: dev/exec/dev
 dev/exec/dev:
-	docker-compose exec dev bash
+	@docker-compose exec dev bash
 
 .PHONY: dev/exec/libvirt
 dev/exec/libvirt:
-	docker-compose exec libvirt bash
+	@docker-compose exec libvirt bash
 
 .PHONY: dev/down
 dev/down:
