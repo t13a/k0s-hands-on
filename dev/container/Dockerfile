@@ -20,6 +20,7 @@ RUN apk --no-cache add \
     make \
     openssh-client-default \
     sudo \
+    terraform \
     tini \
     virt-install \
     yq

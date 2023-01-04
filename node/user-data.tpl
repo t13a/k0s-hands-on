@@ -2,4 +2,4 @@
 
 ssh_authorized_keys:
   - |
-    $(cat ${NODE_SSH_PUBLIC_KEY_FILE})
+    ${ssh_public_key}

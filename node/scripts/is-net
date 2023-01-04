@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-name="${1}"
-
-shift
-
-virsh net-list "${@}" --name | grep -q "^${name} *$"
