@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -eu
+
+cue export github.com/t13a/k0s-hands-on/config | yq -P .

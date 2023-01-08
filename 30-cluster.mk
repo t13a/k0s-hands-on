@@ -1,7 +1,6 @@
 CLUSTER_K0SCTL_YAML := $(DEV_HOME)/k0sctl.yaml
-CLUSTER_K0SCTL_OVERRIDE_YAML := k0sctl.override.yaml
 CLUSTER_KUBECONFIG := $(DEV_HOME)/.kube/config
-CLUSTER_NODES = $(shell yq -r '.spec.hosts[]|select(.role != "controller")|.ssh.address' $(CLUSTER_K0SCTL_OVERRIDE_YAML))
+CLUSTER_NODES = $(shell print-config-as-yaml | yq -r '.nodes[]|select(.role != "controller").name')
 
 .PHONY: cluster/up
 cluster/up: cluster/up/init cluster/up/apply cluster/up/wait
@@ -9,8 +8,8 @@ cluster/up: cluster/up/init cluster/up/apply cluster/up/wait
 .PHONY: cluster/up/init
 cluster/up/init: $(CLUSTER_K0SCTL_YAML)
 
-$(CLUSTER_K0SCTL_YAML): $(CLUSTER_K0SCTL_OVERRIDE_YAML)
-	k0sctl init | yq ea '. as $$item ireduce({}; . * $$item)' - $(CLUSTER_K0SCTL_OVERRIDE_YAML) > $@.tmp
+$(CLUSTER_K0SCTL_YAML):
+	(k0sctl init && echo '---' && cue export github.com/t13a/k0s-hands-on/cluster -e k0sctl.init.override) | yq -P ea '. as $$item ireduce({}; . * $$item)' > $@.tmp
 	mv -f $@.tmp $@
 
 .PHONY: cluster/up/apply

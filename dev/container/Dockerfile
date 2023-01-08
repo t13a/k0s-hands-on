@@ -1,4 +1,14 @@
+FROM alpine:edge AS builder
+
+RUN apk --no-cache add \
+    curl
+
+RUN curl -sSL https://github.com/cue-lang/cue/releases/download/v0.4.3/cue_v0.4.3_linux_amd64.tar.gz | tar xzf - cue \
+    && mv cue /usr/local/bin
+
 FROM alpine:edge
+
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 RUN echo https://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
 

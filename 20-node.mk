@@ -1,4 +1,4 @@
-NODE_NAMES = $(shell yq -r '.spec.hosts[].ssh.address' $(CLUSTER_K0SCTL_OVERRIDE_YAML))
+NODE_NAMES = $(shell print-config-as-yaml | yq -r '.nodes[].name')
 
 .PHONY: node/up
 node/up: node/up/init node/up/apply node/up/wait
