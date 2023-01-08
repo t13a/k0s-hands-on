@@ -7,4 +7,4 @@ up: node/up cluster/up
 down: cluster/down node/down
 
 .PHONY: clean
-clean: node/clean cluster/clean
+clean: cluster/clean node/clean
