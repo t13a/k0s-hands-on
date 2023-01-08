@@ -26,7 +26,11 @@ cluster/up/wait:
 	while ! kubectl wait --for=condition=Ready=true $(addprefix node/,$(CLUSTER_NODES)); do sleep 1; done
 	kubectl get node
 
-# TODO: cluster/upgrade, cluster/down, etc...
+.PHONY: cluster/down
+cluster/down: $(CLUSTER_K0SCTL_YAML)
+	k0sctl reset --config $< --force
+
+# TODO: cluster/upgrade, etc...
 
 .PHONY: cluster/clean
 cluster/clean:
