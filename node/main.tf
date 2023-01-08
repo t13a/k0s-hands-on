@@ -11,15 +11,18 @@ provider "libvirt" {
 }
 
 locals {
-  node_name      = "debian"
+  config         = yamldecode(file(pathexpand("../k0sctl.override.yaml")))
   node_image_url = "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2"
+  node_count     = length(local.config.spec.hosts)
 }
 
 resource "libvirt_domain" "node" {
+  count = local.node_count
+
   autostart = true
-  cloudinit = libvirt_cloudinit_disk.node_seed.id
+  cloudinit = libvirt_cloudinit_disk.node_seed[count.index].id
   memory    = 1024
-  name      = local.node_name
+  name      = local.config.spec.hosts[count.index].ssh.address
   running   = true
   vcpu      = 1
 
@@ -36,7 +39,7 @@ resource "libvirt_domain" "node" {
   }
 
   disk {
-    volume_id = libvirt_volume.node.id
+    volume_id = libvirt_volume.node[count.index].id
   }
 
   graphics {
@@ -44,13 +47,16 @@ resource "libvirt_domain" "node" {
   }
 
   network_interface {
+    hostname     = local.config.spec.hosts[count.index].ssh.address
     network_name = "default"
   }
 }
 
 resource "libvirt_volume" "node" {
+  count = local.node_count
+
   base_volume_id = libvirt_volume.node_base.id
-  name           = "${local.node_name}.qcow2"
+  name           = "${local.config.spec.hosts[count.index].ssh.address}.qcow2"
   pool           = libvirt_pool.node.name
   size           = 16 * 1024 * 1024 * 1024
 }
@@ -63,20 +69,36 @@ resource "libvirt_volume" "node_base" {
 }
 
 resource "libvirt_cloudinit_disk" "node_seed" {
-  name      = "${local.node_name}-seed.iso"
+  count = local.node_count
+
+  name      = "${local.config.spec.hosts[count.index].ssh.address}-seed.iso"
   pool      = libvirt_pool.node.name
-  user_data = data.template_file.node_seed_user_data.rendered
+  user_data = data.template_file.node_seed_user_data[count.index].rendered
+  meta_data = data.template_file.node_seed_meta_data[count.index].rendered
+}
+
+data "template_file" "node_seed_meta_data" {
+  count = local.node_count
+
+  template = file("${path.root}/meta-data.tpl")
+  vars = {
+    instance_id    = local.config.spec.hosts[count.index].ssh.address
+    local_hostname = local.config.spec.hosts[count.index].ssh.address
+  }
 }
 
 data "template_file" "node_seed_user_data" {
+  count = local.node_count
+
   template = file("${path.root}/user-data.tpl")
   vars = {
-    ssh_public_key = file(pathexpand("~/.ssh/id_rsa.pub"))
+    ssh_public_key = file(format("%s.pub", pathexpand(local.config.spec.hosts[count.index].ssh.keyPath)))
+    user           = local.config.spec.hosts[count.index].ssh.user
   }
 }
 
 resource "libvirt_pool" "node" {
-  name = local.node_name
-  path = "/var/lib/libvirt/images/${local.node_name}"
+  name = local.config.metadata.name
+  path = "/var/lib/libvirt/images/${local.config.metadata.name}"
   type = "dir"
 }

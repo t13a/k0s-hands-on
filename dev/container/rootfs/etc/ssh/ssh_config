@@ -7,6 +7,6 @@ Host *
 Host libvirt
     User libvirt
 
-Host debian
+Host node-*
     ProxyJump libvirt
-    User debian
+    User node

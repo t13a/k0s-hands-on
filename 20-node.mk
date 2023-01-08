@@ -1,8 +1,4 @@
-NODE_HOSTNAME := debian
-NODE_USERNAME := debian
-
-.PHONY: node
-node: node/up node/exec
+NODE_NAMES = $(shell yq -r '.spec.hosts[].ssh.address' $(CLUSTER_K0SCTL_OVERRIDE_YAML))
 
 .PHONY: node/up
 node/up: node/up/init node/up/apply node/up/wait
@@ -20,12 +16,7 @@ node/up/apply:
 
 .PHONY: node/up/wait
 node/up/wait:
-	while ! ssh -o ConnectTimeout=1 $(NODE_HOSTNAME) true; do sleep 1; done
-	ssh $(NODE_HOSTNAME) uptime
-
-.PHONY: node/exec
-node/exec:
-	@ssh $(NODE_HOSTNAME)
+	for node_name in $(NODE_NAMES); do while ! ssh -o ConnectTimeout=1 $${node_name} true; do sleep 1; done; ssh $${node_name} uname -a; done
 
 # TODO: node/upgrade, etc...
 

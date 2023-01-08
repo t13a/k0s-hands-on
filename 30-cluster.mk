@@ -1,5 +1,7 @@
 CLUSTER_K0SCTL_YAML := $(DEV_HOME)/k0sctl.yaml
+CLUSTER_K0SCTL_OVERRIDE_YAML := k0sctl.override.yaml
 CLUSTER_KUBECONFIG := $(DEV_HOME)/.kube/config
+CLUSTER_NODES = $(shell yq -r '.spec.hosts[]|select(.role != "controller")|.ssh.address' $(CLUSTER_K0SCTL_OVERRIDE_YAML))
 
 .PHONY: cluster/up
 cluster/up: cluster/up/init cluster/up/apply cluster/up/wait
@@ -7,10 +9,8 @@ cluster/up: cluster/up/init cluster/up/apply cluster/up/wait
 .PHONY: cluster/up/init
 cluster/up/init: $(CLUSTER_K0SCTL_YAML)
 
-$(CLUSTER_K0SCTL_YAML):
-	k0sctl init $(NODE_USERNAME)@$(NODE_HOSTNAME) \
-	| yq '.spec.hosts[0].role |= "single"' \
-	| yq '.spec.hosts[0].ssh.bastion |= { "address": "libvirt", "user": "libvirt" }' > $@.tmp
+$(CLUSTER_K0SCTL_YAML): $(CLUSTER_K0SCTL_OVERRIDE_YAML)
+	k0sctl init | yq ea '. as $$item ireduce({}; . * $$item)' - $(CLUSTER_K0SCTL_OVERRIDE_YAML) > $@.tmp
 	mv -f $@.tmp $@
 
 .PHONY: cluster/up/apply
@@ -23,7 +23,7 @@ cluster/up/apply: $(CLUSTER_K0SCTL_YAML)
 
 .PHONY: cluster/up/wait
 cluster/up/wait:
-	while ! kubectl wait --for=condition=Ready=true "node/$(NODE_HOSTNAME)"; do sleep 1; done
+	while ! kubectl wait --for=condition=Ready=true $(addprefix node/,$(CLUSTER_NODES)); do sleep 1; done
 	kubectl get node
 
 # TODO: cluster/upgrade, cluster/down, etc...
