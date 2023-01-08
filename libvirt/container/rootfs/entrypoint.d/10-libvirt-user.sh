@@ -2,4 +2,4 @@
 
 set -eu
 
-useradd -g libvirt -m libvirt
+id libvirt > /dev/null || useradd -g libvirt -m libvirt
