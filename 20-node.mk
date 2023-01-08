@@ -26,4 +26,5 @@ node/down:
 
 .PHONY: node/clean
 node/clean:
+	for node_name in $(NODE_NAMES); do virsh undefine $${node_name} || true; done
 	rm -rf node/.terraform node/.terraform.* node/*.tfstate node/*.tfstate.*
